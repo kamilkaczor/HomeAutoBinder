@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<div class="sidenav">
+ <form method="POST" action="">
+  {% csrf_token %}
+  {% for key, value in temperatures.items %}
+  <ul>
+    <li>
+      <input type="checkbox" id="{{ forloop.counter }}" name="home_temp" value="{{ forloop.counter }}">
+      Pokój {{ forloop.counter }}: {{value}}
+    </li>
+    </ul>
+  {% endfor %}
+  <button type="submit" formmethod="post">Show chart</button>
+  </form>
+</div>
+
+
+<div align="center">
+<iframe name="iframe_1"  width="1200" height="1200" frameborder="0" src="{% url 'create_chart' %}"></iframe>
+</div>
+{% endblock %}
+
+
+

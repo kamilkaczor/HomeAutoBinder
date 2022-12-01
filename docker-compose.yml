@@ -1,0 +1,84 @@
+version: '3.3'
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=homeautobinder
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=Ka87mil__
+    restart: always
+    ports:
+      - '5432:5432'
+  web:
+    build: .
+    image: django_celery_example_web
+    command: bash -c "python manage.py makemigrations
+        && python manage.py migrate
+        && python manage.py migrate --run-syncdb
+        && python manage.py runserver 0.0.0.0:5050"
+    volumes:
+      - .:/binder
+    ports:
+      - '8000:8000'
+    environment:
+      - POSTGRES_NAME=homeautobinder
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=Ka87mil__
+      - SECRET_KEY_DJANGO='8t@v47^na5jymvc2*ybpy8(morqwjeo#knbdgbhy_q7vm)l$q4'
+      - MQTT_USERNAME='openhab'
+      - MQTT_PASS='Ka87mil__'
+      - SOLAR_INV='redis://cache:6379/0'
+      - CELERY_BROKER_URL='redis://cache:6379/0'
+      - CELERY_RESULT_BACKEND='django-db'
+      - CELERY_CACHE_BACKEND='django-cache'
+    depends_on:
+      - db
+  cache:
+    image: redis
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server
+    volumes:
+      - cache:/data
+
+  worker:
+    build: .
+    environment:
+      - BROKER_URL=redis://cache:6379/0
+      - RESULT_BACKEND=django-db
+      - CACHE_BACKEND=django-cache
+      - C_FORCE_ROOT=true
+      - COMPOSE_HTTP_TIMEOUT=200
+      - POSTGRES_NAME=homeautobinder
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=Ka87mil__
+    command:  bash -c "celery -A binder worker -l info"
+    volumes:
+      - .:/binder
+    depends_on:
+      - db
+      - cache
+
+  celery:
+    build: .
+    environment:
+      - BROKER_URL=redis://cache:6379/0
+      - RESULT_BACKEND=django-db
+      - CACHE_BACKEND=django-cache
+      - C_FORCE_ROOT=true
+      - COMPOSE_HTTP_TIMEOUT=200
+      - POSTGRES_NAME=homeautobinder
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=Ka87mil__
+    volumes:
+      - .:/inverter_readings
+    command:  bash -c "celery -A binder beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    depends_on:
+      - db
+
+volumes:
+    cache:
+      driver: local

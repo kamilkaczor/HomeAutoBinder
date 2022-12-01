@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+<textarea onclick="this.focus();this.select()" style="width: 100%;"> {% filter force_escape %} {% debug %} {% endfilter %}</textarea>
+
+{% block content %}
+
+<div class="sidenav">
+  {% for key, value in inverter_values.items %}
+  <a href="{{ key }}"> {{ key }}: {{ value }}</a>
+  {% endfor %}
+
+
+</div>
+{% endblock %}

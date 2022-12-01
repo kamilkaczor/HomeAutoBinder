@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+<textarea onclick="this.focus();this.select()" style="width: 100%;"> {% filter force_escape %} {% debug %} {% endfilter %}</textarea>
+
+{% block content %}
+
+<link href="https://cdn.jsdelivr.net/css-toggle-switch/latest/toggle-switch.css" rel="stylesheet" />
+
+<ul class="list-group">
+  <li class="list-group-item active">Windows Shutters</li>
+  <li>Roleta okno 1
+<div class="switch-toggle switch-3 switch-candy">
+  <input id="on1" name="state-1" type="radio" checked="" />
+  <label for="on1" onclick="">UP</label>
+
+  <input id="na1" name="state-1" type="radio" disabled checked="checked" />
+  <label for="na1" class="disabled" onclick="">OFF</label>
+
+  <input id="off1" name="state-1" type="radio" />
+  <label for="off1" onclick="">DOWN</label>
+
+  <a></a>
+</div>
+  </li>
+    <li>Roleta okno 2
+<div class="switch-toggle switch-3 switch-candy">
+  <input id="on2" name="state-2" type="radio" checked="" />
+  <label for="on2" onclick="">UP</label>
+
+  <input id="na2" name="state-2" type="radio" disabled checked="checked" />
+  <label for="na2" class="disabled" onclick="">OFF</label>
+
+  <input id="off2" name="state-2" type="radio" />
+  <label for="off2" onclick="">DOWN</label>
+
+  <a></a>
+</div>
+  </li>
+    <li>Roleta okno 3
+<div class="switch-toggle switch-3 switch-candy">
+  <input id="on3" name="state-3" type="radio" checked="" />
+  <label for="on3" onclick="">UP</label>
+
+  <input id="na3" name="state-3" type="radio" disabled checked="checked" />
+  <label for="na3" class="disabled" onclick="">OFF</label>
+
+  <input id="off3" name="state-3" type="radio" />
+  <label for="off3" onclick="">DOWN</label>
+
+  <a></a>
+</div>
+  </li>
+  </ul>
+  </ul>
+
+{% endblock %}
