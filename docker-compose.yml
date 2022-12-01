@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_DB=homeautobinder
       - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=Ka87mil__
+      - POSTGRES_PASSWORD=pass
     restart: always
     ports:
       - '5432:5432'
@@ -25,10 +25,10 @@ services:
     environment:
       - POSTGRES_NAME=homeautobinder
       - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=Ka87mil__
-      - SECRET_KEY_DJANGO='8t@v47^na5jymvc2*ybpy8(morqwjeo#knbdgbhy_q7vm)l$q4'
-      - MQTT_USERNAME='openhab'
-      - MQTT_PASS='Ka87mil__'
+      - POSTGRES_PASSWORD=pass
+      - SECRET_KEY_DJANGO='secret'
+      - MQTT_USERNAME='mqtt'
+      - MQTT_PASS='pass'
       - SOLAR_INV='redis://cache:6379/0'
       - CELERY_BROKER_URL='redis://cache:6379/0'
       - CELERY_RESULT_BACKEND='django-db'
@@ -54,7 +54,7 @@ services:
       - COMPOSE_HTTP_TIMEOUT=200
       - POSTGRES_NAME=homeautobinder
       - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=Ka87mil__
+      - POSTGRES_PASSWORD=pass
     command:  bash -c "celery -A binder worker -l info"
     volumes:
       - .:/binder
@@ -72,7 +72,7 @@ services:
       - COMPOSE_HTTP_TIMEOUT=200
       - POSTGRES_NAME=homeautobinder
       - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=Ka87mil__
+      - POSTGRES_PASSWORD=pass
     volumes:
       - .:/inverter_readings
     command:  bash -c "celery -A binder beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
