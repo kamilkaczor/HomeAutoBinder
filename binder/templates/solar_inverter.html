@@ -6,7 +6,13 @@
 
 <div class="sidenav">
   {% for key, value in inverter_values.items %}
-  <a href="{{ key }}"> {{ key }}: {{ value }}</a>
+  <ul>
+    <li>
+      <input type="checkbox" id="{{ key }}" name="inv_val" value="{{ key }}">
+      {{ key }}: {{ value }}
+    </li>
+  </ul>
+
   {% endfor %}
 
 

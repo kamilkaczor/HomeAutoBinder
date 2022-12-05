@@ -24,9 +24,9 @@ def on_message(client, userdata, message):
     if message.topic == "/rekuperator/1/1":
         reku_temps['Czerpnia'] = message.payload.decode("utf-8")
     elif message.topic == "/rekuperator/1/2":
-        reku_temps['Do domu'] = message.payload.decode("utf-8")
-    elif message.topic == "/rekuperator/1/3":
         reku_temps['Z domu'] = message.payload.decode("utf-8")
+    elif message.topic == "/rekuperator/1/3":
+        reku_temps['Do domu'] = message.payload.decode("utf-8")
     elif message.topic == "/rekuperator/2/1":
         reku_temps['Wyrzutnia'] = message.payload.decode("utf-8")
 

@@ -5,13 +5,13 @@ from . solar_inverter import realtime_readings
 import subprocess
 import re
 from datetime import datetime, timedelta
-from plotly.offline import plot
 import plotly.graph_objects as go
-from django.utils import timezone
-from plotly.graph_objs import Scatter, Layout
+from plotly.subplots import make_subplots
+
 DATE = datetime.now().strftime('%Y-%m-%d')
 TIME = datetime.now().strftime('%H:%M:%S')
-QUERRY_DATE = datetime.now().strftime("%m")
+QUERRY_DATE = 10  #datetime.now().strftime("%m")
+
 
 def index(request):
     return render(request, 'base.html')
@@ -29,6 +29,7 @@ def get_home_temp():
     print(temperatures.values())
     return temperatures
 
+
 def home_temp(request):
     context = {}
     temperatures = get_home_temp()
@@ -40,7 +41,17 @@ def home_temp(request):
 
 def reku_temp(request):
     context = {}
-    reku_temperatures = get_reku_temps()
+    reku_temperature = {}
+    #get last values from database
+    reku_temperatures_last = TemperaturesReku.objects.latest('id')
+    reku_temperatures_ = list(TemperaturesReku.objects.filter(id=reku_temperatures_last.id)\
+        .values_list('temp_inlet', 'temp_outlet', 'temp_form_home', 'temp_to_home'))
+    reku_temperatures = {
+        'Czerpnia': reku_temperatures_[0][0],
+        'Wyrzutnia': reku_temperatures_[0][1],
+        'Z domu': reku_temperatures_[0][2],
+        'Do domu': reku_temperatures_[0][3],
+    }
     context['reku_temperatures'] = reku_temperatures
     if request.method == 'POST':
         checkboxes = request.POST.getlist('reku_temp')
@@ -56,11 +67,15 @@ def solar_inverter(request):
     context = {}
     inverter_values = realtime_readings()
     context['inverter_values'] = inverter_values
+    if request.method == 'POST':
+        checkboxes = request.POST.getlist('inv_val')
+        request.session['checkboxes_inv'] = checkboxes
     return render(request, 'solar_inverter.html', context)
+
 
 def save_values_to_db():
     reku_temperatures = get_reku_temps()
-    home_temperatures = list(get_home_temp().values()) #dict to list of values
+    home_temperatures = list(get_home_temp().values())
     inverter_values = realtime_readings()
     t1 = TemperaturesReku(date=DATE, time=TIME, temp_inlet=reku_temperatures['Czerpnia'],
                           temp_outlet=reku_temperatures['Wyrzutnia'], temp_form_home=reku_temperatures['Z domu'],
@@ -80,45 +95,70 @@ def save_values_to_db():
     inverter.save()
 
 
-def create_chart(request):
-    time = []
-    querry_from_db = []
-
+def create_chart_home(request):
+    plot_data = []
     context = {}
-    #try:
-    checkboxes_home_temp = request.session['checkboxes_home_list']
-    sensor_number = ["temp_" + item for item in checkboxes_home_temp]
-    print(sensor_number)
-    for item in range(0, len(sensor_number)):
-        time, value = get_values_from_db(TemperaturesHome, QUERRY_DATE, sensor_number[item])
-        print(time, value)
-        plot_data = add_series(time, value)
-
-    context = {'plot_div': plot_data}
-
+    try:
+        checkboxes_home_temp = request.session['checkboxes_home_list']
+        sensor_number = ["temp_" + item for item in checkboxes_home_temp]
+        fig = make_subplots(rows=1, cols=len(sensor_number))
+        for item in range(0, len(sensor_number)):
+            time, value = get_values_from_db(TemperaturesHome, QUERRY_DATE, sensor_number[item])
+            print(time, value)
+            plot_data = fig.add_trace(go.Scatter(x=time, y=value, mode='lines',
+                                                 name=f"Temperatura pokój {checkboxes_home_temp[item]}"),
+                                      row=1, col=item+1)
+        context = {'plot_div': plot_data.to_html()}
+    except Exception as e:
+        print(e)
     return render(request, 'chart.html', context)
+
+
+def create_chart_reku(request):
+    plot_data = []
+    context = {}
+    try:
+        checkboxes_reku_temp = request.session['checkboxes_reku_list']
+        fig = make_subplots(rows=1, cols=len(checkboxes_reku_temp))
+        print(checkboxes_reku_temp)
+        reku_dict = {
+            'Wyrzutnia': 'temp_outlet',
+            'Czerpnia': 'temp_inlet',
+            'Z domu': 'temp_form_home',
+            'Do domu': 'temp_form_home',
+        }
+        for item in range(0, len(checkboxes_reku_temp)):
+            print(reku_dict[checkboxes_reku_temp[item]])
+            time, value = get_values_from_db(TemperaturesReku, QUERRY_DATE, reku_dict[checkboxes_reku_temp[item]])
+            print(time, value)
+            plot_data = fig.add_trace(go.Scatter(x=time, y=value, mode='lines', name=f"Temperatura {checkboxes_reku_temp[item]}"), row=1, col=item+1)
+        context = {'plot_div': plot_data.to_html()}
+    except Exception as e:
+        print(e)
+    return render(request, 'chart.html', context)
+
+
+def create_chart_inv(request):
+    plot_data = []
+    context = {}
+    try:
+        checkboxes_inv_val = request.session['checkboxes_inv_val']
+        fig = make_subplots(rows=5, cols=len(checkboxes_inv_val))
+
+    except Exception as e:
+        print(e)
+    return render(request, 'chart.html', context)
+
 
 def about(request):
     save_values_to_db()
     return render(request, 'about.html')
 
+
 def get_values_from_db(db_name, date, fil_arg):
-    time = list(db_name.objects.filter(pub_date__month=date).values_list('time', flat=True))
+    time = list(db_name.objects.filter(date__month=date).values_list('time', flat=True))
     time = [item.strftime("%H:%M:%S") for item in time]
-    querry_from_db = list(db_name.objects.filter(pub_date__month=date).values_list(fil_arg, flat=True))
+    querry_from_db = list(db_name.objects.filter(date__month=date).values_list(fil_arg, flat=True))
     querry_from_db = [float(item) for item in querry_from_db]
     return time, querry_from_db
 
-
-def add_series(x, y):
-    graphs = []
-    graphs.append(go.Scatter(x=x, y=y, mode='lines', name='chart'))
-    layout = {
-        'title': ' ',
-        'xaxis_title': 'Time',
-        'yaxis_title': 'Value',
-        'height': 1200,
-        'width': 1200,
-    }
-    plot_div = plot({'data': graphs, 'layout': layout}, output_type='div')
-    return plot_div
