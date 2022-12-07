@@ -5,6 +5,8 @@
 {% block content %}
 
 <div class="sidenav">
+   <form method="POST" action="">
+     {% csrf_token %}
   {% for key, value in inverter_values.items %}
   <ul>
     <li>
@@ -15,6 +17,10 @@
 
   {% endfor %}
 
-
+  <button type="submit" formmethod="post">Show chart</button>
+  </form>
+</div>
+<div align="center">
+<iframe name="iframe_1" width="1000" height="6000" frameborder="0" src="{% url 'create_chart_inv' %}"></iframe>
 </div>
 {% endblock %}

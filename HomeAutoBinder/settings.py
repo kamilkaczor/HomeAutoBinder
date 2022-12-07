@@ -90,7 +90,16 @@ DATABASES = {
     }
 }
 
-
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://localhost:6379/1",  #  os.environ['REDIS_URL'],
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "MAX_ENTRIES": 1000  # Increase max cache entries to 1k (from 300)
+        },
+    }
+}
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -143,20 +152,11 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Europe/Warsaw'
 CELERY_BEAT_SCHEDULE = {
     "save_home_temp_to_db": {
-        "task": "inverter_readings.tasks.save_home_temp_to_db",
-        "schedule": 180.0,
+        "task": "binder.tasks.save_to_db",
+        "schedule": 300.0,
         "args": ()
     },
-    "save_reku_to_db": {
-        "task": "inverter_readings.tasks.save_reku_to_db",
-        "schedule": 180.0,
-        "args": ()
-    },
-    "save_inverter_to_db": {
-        "task": "inverter_readings.tasks.save_inverter_to_db",
-        "schedule": 180.0,
-        "args": ()
-    },
+
 }
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'

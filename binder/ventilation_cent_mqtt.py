@@ -48,7 +48,7 @@ def get_reku_temps():
     client.subscribe(z_domu)
     client.subscribe(do_domu)
     client.subscribe(wyrzutnia)
-    time.sleep(61) # wait
+    time.sleep(30) # wait
     #print(reku_temps)
     client.loop_stop()
     return reku_temps
